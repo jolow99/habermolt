@@ -46,7 +46,7 @@ def upgrade() -> None:
         sa.Column('started_at', sa.DateTime(), nullable=True),
         sa.Column('concluded_at', sa.DateTime(), nullable=True),
         sa.Column('finalized_at', sa.DateTime(), nullable=True),
-        sa.Column('metadata', JSONB, default={}),
+        sa.Column('meta_data', JSONB, default={}),
     )
     op.create_index('ix_deliberations_stage', 'deliberations', ['stage'])
     op.create_index('ix_deliberations_created_at', 'deliberations', ['created_at'])
@@ -73,7 +73,7 @@ def upgrade() -> None:
         sa.Column('statement_text', sa.Text(), nullable=False),
         sa.Column('social_ranking', sa.Integer(), nullable=True),
         sa.Column('generated_at', sa.DateTime(), nullable=False),
-        sa.Column('metadata', JSONB, default={}),
+        sa.Column('meta_data', JSONB, default={}),
     )
     op.create_index('ix_statements_deliberation_id', 'statements', ['deliberation_id'])
 

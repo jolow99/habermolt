@@ -60,7 +60,7 @@ async def create_deliberation(
         creator_agent=agent,
         max_citizens=request.max_citizens,
         num_critique_rounds=request.num_critique_rounds,
-        metadata=request.metadata
+        meta_data=request.meta_data
     )
 
     return DeliberationResponse.from_orm(deliberation)

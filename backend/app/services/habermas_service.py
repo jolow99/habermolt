@@ -107,7 +107,7 @@ class HabermasService:
                 round_number=0,  # Opinion round is round 0
                 statement_text=statement_text,
                 social_ranking=int(rank),  # Convert numpy int to Python int
-                metadata={
+                meta_data={
                     "explanations": results.explanations[idx] if results.explanations else None,
                 }
             )
@@ -163,7 +163,7 @@ class HabermasService:
                 round_number=round_number,
                 statement_text=statement_text,
                 social_ranking=int(rank),  # Convert numpy int to Python int
-                metadata={
+                meta_data={
                     "explanations": results.explanations[idx] if results.explanations else None,
                 }
             )

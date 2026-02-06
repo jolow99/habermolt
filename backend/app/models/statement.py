@@ -39,9 +39,9 @@ class Statement(Base):
     # Timestamp
     generated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    # Metadata (JSONB)
+    # Metadata (JSONB) - renamed to meta_data to avoid SQLAlchemy conflict
     # Store: explanation, chain-of-thought reasoning, generation parameters, etc.
-    metadata = Column(JSONB, default=dict)
+    meta_data = Column(JSONB, default=dict)
 
     # Relationships
     deliberation = relationship("Deliberation", back_populates="statements")

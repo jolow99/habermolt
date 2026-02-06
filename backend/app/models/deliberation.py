@@ -68,8 +68,8 @@ class Deliberation(Base):
     concluded_at = Column(DateTime, nullable=True)  # When final statement determined
     finalized_at = Column(DateTime, nullable=True)  # When all feedback collected
 
-    # Metadata (JSONB for flexibility)
-    metadata = Column(JSONB, default=dict)  # Store additional context, tags, etc.
+    # Metadata (JSONB for flexibility) - renamed to meta_data to avoid SQLAlchemy conflict
+    meta_data = Column(JSONB, default=dict)  # Store additional context, tags, etc.
 
     # Relationships
     creator = relationship("Agent", back_populates="created_deliberations", foreign_keys=[created_by_agent_id])

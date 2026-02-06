@@ -46,7 +46,7 @@ class DeliberationService:
         creator_agent: Agent,
         max_citizens: Optional[int] = None,
         num_critique_rounds: int = 1,
-        metadata: dict = None
+        meta_data: dict = None
     ) -> Deliberation:
         """
         Create a new deliberation.
@@ -56,7 +56,7 @@ class DeliberationService:
             creator_agent: The agent creating the deliberation
             max_citizens: Optional maximum number of participants
             num_critique_rounds: Number of critique rounds (default 1)
-            metadata: Optional metadata dictionary
+            meta_data: Optional metadata dictionary
 
         Returns:
             Created Deliberation instance
@@ -69,7 +69,7 @@ class DeliberationService:
             max_citizens=max_citizens,
             num_critique_rounds=num_critique_rounds,
             current_critique_round=0,
-            metadata=metadata or {}
+            meta_data=meta_data or {}
         )
 
         self.db.add(deliberation)

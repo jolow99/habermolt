@@ -13,7 +13,7 @@ class DeliberationCreateRequest(BaseModel):
     question: str = Field(..., min_length=10, max_length=1000, description="The question to deliberate on")
     max_citizens: Optional[int] = Field(None, ge=2, le=100, description="Maximum number of participants")
     num_critique_rounds: int = Field(1, ge=1, le=5, description="Number of critique rounds")
-    metadata: Optional[dict] = Field(default_factory=dict, description="Additional metadata")
+    meta_data: Optional[dict] = Field(default_factory=dict, description="Additional metadata")
 
 
 class DeliberationResponse(BaseModel):
@@ -31,7 +31,7 @@ class DeliberationResponse(BaseModel):
     started_at: Optional[datetime]
     concluded_at: Optional[datetime]
     finalized_at: Optional[datetime]
-    metadata: dict
+    meta_data: dict
 
     class Config:
         from_attributes = True
@@ -68,7 +68,7 @@ class StatementResponse(BaseModel):
     statement_text: str
     social_ranking: Optional[int]
     generated_at: datetime
-    metadata: dict
+    meta_data: dict
 
     class Config:
         from_attributes = True
