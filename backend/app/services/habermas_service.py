@@ -5,6 +5,7 @@ Provides high-level methods for running opinion and critique rounds.
 """
 
 import asyncio
+import os
 from typing import List, Tuple
 from sqlalchemy.orm import Session
 
@@ -42,9 +43,12 @@ class HabermasService:
         Returns:
             Configured HabermasMachine instance
         """
+        # Set GOOGLE_API_KEY in environment for Habermas Machine
+        os.environ['GOOGLE_API_KEY'] = settings.GOOGLE_API_KEY
+
         # Configure LLM clients
-        statement_client = types.LLMClient.AISTUDIO.get_client(model=self.llm_model)
-        reward_client = types.LLMClient.AISTUDIO.get_client(model=self.llm_model)
+        statement_client = types.LLMCLient.AISTUDIO.get_client(model=self.llm_model)
+        reward_client = types.LLMCLient.AISTUDIO.get_client(model=self.llm_model)
 
         # Configure models
         statement_model = types.StatementModel.CHAIN_OF_THOUGHT.get_model()
@@ -97,19 +101,19 @@ class HabermasService:
             return machine.mediate(opinions)
 
         # Execute in thread pool to avoid blocking async event loop
-        results = await asyncio.to_thread(_run_mediate)
+        # Returns: (winner_statement_str, sorted_statements_list)
+        winner_text, sorted_statements = await asyncio.to_thread(_run_mediate)
 
         # Store statements in database
+        # sorted_statements is sorted by rank (winner first)
         statements = []
-        for idx, (statement_text, rank) in enumerate(zip(results.statements, results.social_ranking)):
+        for idx, statement_text in enumerate(sorted_statements):
             statement = Statement(
                 deliberation_id=deliberation.id,
                 round_number=0,  # Opinion round is round 0
                 statement_text=statement_text,
-                social_ranking=int(rank),  # Convert numpy int to Python int
-                meta_data={
-                    "explanations": results.explanations[idx] if results.explanations else None,
-                }
+                social_ranking=idx + 1,  # Rank 1 = winner, 2 = second, etc.
+                meta_data={}
             )
             db.add(statement)
             statements.append(statement)
@@ -117,7 +121,7 @@ class HabermasService:
         db.commit()
 
         # Return winner (rank 1) and all statements
-        winner = next(s for s in statements if s.social_ranking == 1)
+        winner = statements[0]  # First in sorted list is winner
         return winner, statements
 
     async def run_critique_round(
@@ -153,19 +157,19 @@ class HabermasService:
             return machine.mediate(critiques)
 
         # Execute in thread pool
-        results = await asyncio.to_thread(_run_mediate)
+        # Returns: (winner_statement_str, sorted_statements_list)
+        winner_text, sorted_statements = await asyncio.to_thread(_run_mediate)
 
         # Store statements in database
+        # sorted_statements is sorted by rank (winner first)
         statements = []
-        for idx, (statement_text, rank) in enumerate(zip(results.statements, results.social_ranking)):
+        for idx, statement_text in enumerate(sorted_statements):
             statement = Statement(
                 deliberation_id=deliberation.id,
                 round_number=round_number,
                 statement_text=statement_text,
-                social_ranking=int(rank),  # Convert numpy int to Python int
-                meta_data={
-                    "explanations": results.explanations[idx] if results.explanations else None,
-                }
+                social_ranking=idx + 1,  # Rank 1 = winner, 2 = second, etc.
+                meta_data={}
             )
             db.add(statement)
             statements.append(statement)
@@ -173,7 +177,7 @@ class HabermasService:
         db.commit()
 
         # Return winner (rank 1) and all statements
-        winner = next(s for s in statements if s.social_ranking == 1)
+        winner = statements[0]  # First in sorted list is winner
         return winner, statements
 
 

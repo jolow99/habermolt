@@ -112,10 +112,14 @@ class AIStudioClient(base_client.LLMClient):
     try:
       # AI Studio returns a list of parts, but we only use the first one.
       response = sample.candidates[0].content.parts[0].text
-    except ValueError as e:
+    except (ValueError, IndexError) as e:
       print('An error occurred: ', e)
       print(f'prompt: {prompt}')
       print(f'sample: {sample}')
+      print(f'sample.prompt_feedback: {sample.prompt_feedback}')
+      # Check if blocked by safety filters
+      if hasattr(sample, 'prompt_feedback'):
+        print(f'Safety ratings: {sample.prompt_feedback}')
       response = ''
     return utils.truncate(response, delimiters=terminators)
 

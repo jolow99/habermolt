@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # Habermas Machine Configuration
     HABERMAS_NUM_CANDIDATES: int = 16
     HABERMAS_NUM_CRITIQUE_ROUNDS: int = 1
-    HABERMAS_LLM_MODEL: str = "gemini-1.5-flash"
+    HABERMAS_LLM_MODEL: str = "gemini-flash-latest"  # Uses latest Gemini Flash (fast, cheap)
     HABERMAS_VERBOSE: bool = False
     HABERMAS_NUM_RETRIES: int = 5
 

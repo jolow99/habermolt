@@ -6,8 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+import threading
+import asyncio
 
-from app.database import get_db
+from app.database import get_db, SessionLocal
 from app.models import Agent, Deliberation, DeliberationStage, Opinion, Ranking, Critique, HumanFeedback
 from app.middleware.auth import APIKeyAuth
 from app.services.deliberation_service import DeliberationService
@@ -215,12 +217,34 @@ async def submit_opinion(
     db.commit()
     db.refresh(opinion)
 
-    # Check for state transition in background
-    async def check_transition():
-        service = DeliberationService(db)
-        await service.check_and_transition_state(deliberation)
+    # Check for state transition AFTER committing opinion
+    # Refresh deliberation to get latest opinions
+    db.refresh(deliberation)
 
-    background_tasks.add_task(check_transition)
+    # Run transition check - this will block during Habermas Machine (30-60s)
+    print(f"[DEBUG] Checking transition: {len(deliberation.opinions)} opinions, max {deliberation.max_citizens}")
+    try:
+        service = DeliberationService(db)
+        result = await service.check_and_transition_state(deliberation)
+        print(f"[DEBUG] Transition result: {result}, new stage: {deliberation.stage}")
+    except Exception as e:
+        print(f"[DEBUG] Transition error: {e}")
+        import traceback
+        traceback.print_exc()
+
+        # Check if it's a Google API quota error
+        error_msg = str(e)
+        if "429" in error_msg or "quota" in error_msg.lower() or "rate" in error_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Google API quota exceeded. Please update GOOGLE_API_KEY in backend/.env with a new key from https://aistudio.google.com/app/apikey. Error: {error_msg}"
+            )
+
+        # For other errors, still fail the request to make issues visible
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process deliberation: {error_msg}"
+        )
 
     return OpinionResponse.from_orm(opinion)
 
@@ -331,10 +355,19 @@ async def submit_ranking(
     db.commit()
     db.refresh(ranking)
 
-    # Check for state transition in background
-    async def check_transition():
-        service = DeliberationService(db)
-        await service.check_and_transition_state(deliberation)
+    # Check for state transition in background with fresh DB session
+    def check_transition():
+        from app.database import SessionLocal
+        fresh_db = SessionLocal()
+        try:
+            import asyncio
+            service = DeliberationService(fresh_db)
+            fresh_delib = fresh_db.query(Deliberation).filter(
+                Deliberation.id == deliberation_id
+            ).first()
+            asyncio.run(service.check_and_transition_state(fresh_delib))
+        finally:
+            fresh_db.close()
 
     background_tasks.add_task(check_transition)
 
@@ -420,12 +453,32 @@ async def submit_critique(
     db.commit()
     db.refresh(critique)
 
-    # Check for state transition in background
-    async def check_transition():
-        service = DeliberationService(db)
-        await service.check_and_transition_state(deliberation)
+    # Check for state transition - this will block during Habermas Machine (30-60s)
+    db.refresh(deliberation)
+    print(f"[DEBUG] Checking critique transition: {len([c for c in deliberation.critiques if c.round_number == deliberation.current_critique_round])} critiques for round {deliberation.current_critique_round}")
 
-    background_tasks.add_task(check_transition)
+    try:
+        service = DeliberationService(db)
+        result = await service.check_and_transition_state(deliberation)
+        print(f"[DEBUG] Transition result: {result}, new stage: {deliberation.stage}")
+    except Exception as e:
+        print(f"[DEBUG] Transition error: {e}")
+        import traceback
+        traceback.print_exc()
+
+        # Check if it's a Google API quota error
+        error_msg = str(e)
+        if "429" in error_msg or "quota" in error_msg.lower() or "rate" in error_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Google API quota exceeded. Please update GOOGLE_API_KEY in backend/.env with a new key from https://aistudio.google.com/app/apikey. Error: {error_msg}"
+            )
+
+        # For other errors, still fail the request to make issues visible
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process deliberation: {error_msg}"
+        )
 
     return CritiqueResponse.from_orm(critique)
 
@@ -507,10 +560,18 @@ async def submit_feedback(
     db.commit()
     db.refresh(feedback)
 
-    # Check for state transition in background
+    # Check for state transition in background with fresh DB session
     def check_transition():
-        service = DeliberationService(db)
-        service._check_concluded_to_finalized_transition(deliberation)
+        from app.database import SessionLocal
+        fresh_db = SessionLocal()
+        try:
+            service = DeliberationService(fresh_db)
+            fresh_delib = fresh_db.query(Deliberation).filter(
+                Deliberation.id == deliberation_id
+            ).first()
+            service._check_concluded_to_finalized_transition(fresh_delib)
+        finally:
+            fresh_db.close()
 
     background_tasks.add_task(check_transition)
 

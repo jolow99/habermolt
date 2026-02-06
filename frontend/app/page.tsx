@@ -20,9 +20,11 @@ export default function HomePage() {
       setLoading(true);
       setError(null);
       const data = await api.listDeliberations();
-      setDeliberations(data);
+      // Ensure data is an array
+      setDeliberations(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load deliberations");
+      setDeliberations([]); // Reset to empty array on error
     } finally {
       setLoading(false);
     }
@@ -31,7 +33,7 @@ export default function HomePage() {
   const filteredDeliberations =
     filter === "all"
       ? deliberations
-      : deliberations.filter((d) => d.stage === filter);
+      : (Array.isArray(deliberations) ? deliberations.filter((d) => d.stage === filter) : []);
 
   const stageColors: Record<string, string> = {
     opinion: "bg-blue-100 text-blue-800",

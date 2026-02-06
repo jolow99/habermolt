@@ -243,7 +243,8 @@ def _check_response_format(response: str) -> bool:
   Returns:
     bool: True if the format is correct, False otherwise
   """
-  pattern = r'<answer>\s*.*?\s*<sep>\s*.*?\s*</answer>'
+  # Made more lenient - some models omit the opening <answer> tag
+  pattern = r'(?:<answer>\s*)?.*?\s*<sep>\s*.*?\s*</answer>'
   return bool(re.search(pattern, response, re.DOTALL))
 
 
@@ -336,9 +337,15 @@ def _process_model_response(
     ranking is incorrect.
   """
   if _check_response_format(response):
+    # Try with opening <answer> tag first
     match = re.search(
         r'<answer>\s*(.*?)\s*<sep>\s*(.*?)\s*</answer>', response, re.DOTALL
     )
+    # If not found, try without opening tag (some models omit it)
+    if match is None:
+      match = re.search(
+          r'(.*?)\s*<sep>\s*(.*?)\s*</answer>', response, re.DOTALL
+      )
     if match is None:
       return base_model.RankingResult(None, f'INCORRECT_TEMPLATE: {response}')
     else:

@@ -40,3 +40,4 @@ Thumbs.db
 # Secrets
 .env.local
 .env.production
+.env.deployment
