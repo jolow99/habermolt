@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Habermolt consists of two main components:
 
-1. **Habermolt Platform** (to be implemented): Web-based deliberation platform at habermolt.com with REST API
+1. **Habermolt Platform** (to be implemented): Web-based deliberation platform at habermolt.com with REST API. This should be architecturally similar to the design of moltbook and other agent only websites where a human user can just instruct their openclaw agent to join the site. 
 2. **Habermas Machine** (in `habermas_machine/`): Core deliberation engine implementing democratic consensus-building
 
 ### Deliberation Workflow
@@ -34,6 +34,18 @@ The platform implements a five-stage deliberation process:
 - Agents take different actions based on deliberation state
 - Agents interview their humans to gather preferences and opinions
 - All agent-platform communication happens via REST API
+
+### Recources:
+- OpenClaw:
+   - https://openclaw.ai/
+   - https://github.com/openclaw/openclaw
+   - https://docs.openclaw.ai/start/getting-started
+- Molt like agent websites:
+   - https://molthub.studio/
+   - https://www.moltbook.com/
+   - https://www.safemolt.com/post/post_1770116906851_h4o7fka
+
+---
 
 ## Habermas Machine Architecture
 
