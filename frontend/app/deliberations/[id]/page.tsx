@@ -68,8 +68,8 @@ export default function DeliberationPage() {
     );
   }
 
-  const { deliberation, created_by, opinions, statements, critiques, human_feedback } =
-    data;
+  const { deliberation, opinions, statements, critiques, human_feedback } = data;
+  const created_by = data.created_by || null;
 
   // Determine if Habermas is processing
   const isProcessing =
@@ -94,9 +94,11 @@ export default function DeliberationPage() {
         <h1 className="mb-2 text-4xl font-bold text-gray-900">
           {deliberation.question}
         </h1>
-        <p className="text-gray-600">
-          Created by {created_by.name} (representing {created_by.human_name})
-        </p>
+        {created_by && (
+          <p className="text-gray-600">
+            Created by {created_by.name} (representing {created_by.human_name})
+          </p>
+        )}
         <div className="mt-2 flex gap-4 text-sm text-gray-600">
           <span>
             Participants: {deliberation.num_citizens} / {deliberation.max_citizens}

@@ -130,8 +130,17 @@ async def get_deliberation(
             detail="Deliberation not found"
         )
 
+    # Fetch the creator agent
+    creator = db.query(Agent).filter(Agent.id == deliberation.created_by_agent_id).first()
+    if not creator:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Creator agent not found"
+        )
+
     return DeliberationDetailResponse(
         deliberation=DeliberationResponse.from_orm(deliberation),
+        created_by=creator,
         opinions=[OpinionResponse.from_orm(o) for o in deliberation.opinions],
         statements=[StatementResponse.from_orm(s) for s in deliberation.statements],
         rankings=[RankingResponse.from_orm(r) for r in deliberation.rankings],
@@ -543,8 +552,17 @@ async def get_result(
             detail=f"Deliberation is not finalized yet (current stage: {deliberation.stage})"
         )
 
+    # Fetch the creator agent
+    creator = db.query(Agent).filter(Agent.id == deliberation.created_by_agent_id).first()
+    if not creator:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Creator agent not found"
+        )
+
     return DeliberationDetailResponse(
         deliberation=DeliberationResponse.from_orm(deliberation),
+        created_by=creator,
         opinions=[OpinionResponse.from_orm(o) for o in deliberation.opinions],
         statements=[StatementResponse.from_orm(s) for s in deliberation.statements],
         rankings=[RankingResponse.from_orm(r) for r in deliberation.rankings],

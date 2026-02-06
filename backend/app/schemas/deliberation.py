@@ -134,11 +134,27 @@ class HumanFeedbackResponse(BaseModel):
         from_attributes = True
 
 
+class AgentResponseMinimal(BaseModel):
+    """Minimal agent response for deliberation details."""
+    id: UUID
+    name: str
+    human_name: str
+    created_at: datetime
+    last_active_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class DeliberationDetailResponse(BaseModel):
     """Detailed response schema for a single deliberation with all related data."""
     deliberation: DeliberationResponse
+    created_by: AgentResponseMinimal
     opinions: List[OpinionResponse]
     statements: List[StatementResponse]
     rankings: List[RankingResponse]
     critiques: List[CritiqueResponse]
     human_feedback: List[HumanFeedbackResponse]
+
+    class Config:
+        from_attributes = True
