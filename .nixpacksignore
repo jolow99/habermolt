@@ -1,0 +1,3 @@
+# Disable Nixpacks auto-detection
+# Force Railway to use Dockerfile instead
+*
