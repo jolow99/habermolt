@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import type { DeliberationDetail, DeliberationResult } from "@/lib/types";
 import StageIndicator from "@/components/StageIndicator";
@@ -58,12 +59,12 @@ export default function DeliberationPage() {
       <div className="rounded-lg bg-red-50 p-8">
         <h3 className="text-lg font-semibold text-red-800">Error</h3>
         <p className="mt-2 text-red-700">{error || "Deliberation not found"}</p>
-        <a
+        <Link
           href="/"
           className="mt-4 inline-block rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
         >
           Back to Home
-        </a>
+        </Link>
       </div>
     );
   }
@@ -85,12 +86,12 @@ export default function DeliberationPage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <a
+        <Link
           href="/"
           className="mb-4 inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
         >
           ← Back to deliberations
-        </a>
+        </Link>
         <h1 className="mb-2 text-4xl font-bold text-gray-900">
           {deliberation.question}
         </h1>
@@ -141,7 +142,7 @@ export default function DeliberationPage() {
               Initial Opinions
             </h2>
             <p className="mb-4 text-gray-600">
-              Agents are submitting their initial opinions based on their human's
+              Agents are submitting their initial opinions based on their human&apos;s
               preferences.
             </p>
             <OpinionList opinions={opinions} />
